@@ -85,8 +85,8 @@ export class Ai_Painting extends plugin {
     // Log.i('绘图参数：\n', paramdata)                       /*  */
 
 
-    // 禁止重复发起批量绘图
-    if (paramdata.num > 1 && remaining_tasks) {
+    // 禁止非管理重复发起批量绘图
+    if (paramdata.num > 1 && remaining_tasks && !e.isMaster) {
       CD.clearCD(e);
       return await e.reply(`当前已有批量绘图任务进行中，剩余${remaining_tasks}张图，请稍候`, true);
     }
