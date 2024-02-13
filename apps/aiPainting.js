@@ -301,6 +301,67 @@ export class Ai_Painting extends plugin {
       let failedCount = 0; //  标记有几张图请求失败
       var data_msg = [];
 
+      // for (let i = 0; i < paramdata.num; i++) {
+      //   if (i >= 10) {
+      //     data_msg.push({
+      //       message: "一次最多10张图哦~",
+      //       nickname: Bot.nickname,
+      //       user_id: Bot.uin,
+      //     });
+      //     break;
+      //   }
+
+      //   // 获取一张图片
+      //   var res = await Draw.get_a_pic(paramdata)
+
+      //   // 图片损坏或审核超时或响应超时
+      //   if (res.code == 21 || res.code == 32 || res.code == 504) {
+      //     failedCount++;
+      //     remaining_tasks--;
+      //     continue
+      //   }
+      //   // 严重错误，清除CD，发送报错信息 
+      //   else if (res.code) {
+      //     CD.clearCD(e)
+      //     remaining_tasks = 0
+      //     return await e.reply(res.description, true)
+      //   }
+
+      //   // 图片违规时，通知主人
+      //   if (res.isnsfw) {
+      //     if (current_group_policy.isTellMaster) {
+      //       let msg = [
+      //         "【aiPainting】不合规图片：\n",
+      //         {...segment.image(`base64://${res.base64}`), origin: true},
+      //         `\n来自${e.isGroup ? `群【${(await Bot.getGroupInfo(e.group_id)).group_name}】(${e.group_id})的` : ""}用户【${await getuserName(e)}】(${e.user_id})`,
+      //         `\n正面：${res.info.prompt}`,
+      //         `\n反面：${res.info.negative_prompt}`,
+      //       ]
+      //       Bot.pickUser(cfg.masterQQ[0]).sendMsg(msg);
+      //     }
+      //     data_msg.push({
+      //       message: [res.md5],
+      //       nickname: Bot.nickname,
+      //       user_id: Bot.uin,
+      //     });
+      //     blocked++;
+      //     remaining_tasks--;
+      //     continue;
+      //   }
+
+      //   // 存入合并消息等待发送
+      //   data_msg.push({
+      //     message: [{...segment.image(`base64://${res.base64}`), origin: true}, paramdata.param.seed == -1 ? `\n随机种子：${res.seed}` : ''],
+      //     nickname: Bot.nickname,
+      //     user_id: Bot.uin,
+      //   });
+
+      //   remaining_tasks--;
+      // }
+
+      // 尝试适用于大负载绘图接口的同步请求
+      let draw_tasks = [];
+
       for (let i = 0; i < paramdata.num; i++) {
         if (i >= 10) {
           data_msg.push({
@@ -310,71 +371,78 @@ export class Ai_Painting extends plugin {
           });
           break;
         }
+        
+        draw_tasks.push(Draw.get_a_pic(paramdata));
+      }
 
-        // 获取一张图片
-        var res = await Draw.get_a_pic(paramdata)
 
-        // 图片损坏或审核超时或响应超时
-        if (res.code == 21 || res.code == 32 || res.code == 504) {
-          failedCount++;
-          remaining_tasks--;
-          continue
-        }
-        // 严重错误，清除CD，发送报错信息 
-        else if (res.code) {
-          CD.clearCD(e)
-          remaining_tasks = 0
-          return await e.reply(res.description, true)
-        }
+      var data_msg = [];
 
-        // 图片违规时，通知主人
-        if (res.isnsfw) {
-          if (current_group_policy.isTellMaster) {
-            let msg = [
-              "【aiPainting】不合规图片：\n",
-              {...segment.image(`base64://${res.base64}`), origin: true},
-              `\n来自${e.isGroup ? `群【${(await Bot.getGroupInfo(e.group_id)).group_name}】(${e.group_id})的` : ""}用户【${await getuserName(e)}】(${e.user_id})`,
-              `\n正面：${res.info.prompt}`,
-              `\n反面：${res.info.negative_prompt}`,
-            ]
-            Bot.pickUser(cfg.masterQQ[0]).sendMsg(msg);
-          }
+      const draw_results = await Promise.all(draw_tasks)
+        .then(async (resList) => {
+          await Promise.all(resList.map(async (res) => {
+            // 图片损坏或审核超时或响应超时
+            if (res.code == 21 || res.code == 32 || res.code == 504) {
+              failedCount++;
+              remaining_tasks--;
+            }
+            // 严重错误，清除CD，发送报错信息 
+            else if (res.code) {
+              CD.clearCD(e);
+              remaining_tasks = 0;
+              throw new Error(res); // 抛出一个错误
+            }
+            // 图片违规时，通知主人
+            if (res.isnsfw) {
+              if (current_group_policy.isTellMaster) {
+                let msg = [
+                  "【aiPainting】不合规图片：\n",
+                  { ...segment.image(`base64://${res.base64}`), origin: true },
+                  `\n来自${e.isGroup ? `群【${(await Bot.getGroupInfo(e.group_id)).group_name}】(${e.group_id})的` : ""}用户【${await getuserName(e)}】(${e.user_id})`,
+                  `\n正面：${res.info.prompt}`,
+                  `\n反面：${res.info.negative_prompt}`,
+                ];
+                Bot.pickUser(cfg.masterQQ[0]).sendMsg(msg);
+              }
+              data_msg.push({
+                message: [res.md5],
+                nickname: Bot.nickname,
+                user_id: Bot.uin,
+              });
+              blocked++;
+              remaining_tasks--;
+            }
+            // 存入合并消息等待发送
+            data_msg.push({
+              message: [{ ...segment.image(`base64://${res.base64}`), origin: true }, paramdata.param.seed == -1 ? `\n随机种子：${res.seed}` : ''],
+              nickname: Bot.nickname,
+              user_id: Bot.uin,
+            });
+          }))
+          return(resList[0]);
+        })
+        .then((res) => {
+          // 在合并消息中加入图片信息 
           data_msg.push({
-            message: [res.md5],
+            message: [
+              `迭代步数：${res.info.steps}`,
+              res.info.denoising_strength ? `重绘幅度：${res.info.denoising_strength}` : "",
+              `采样方法：${res.info.sampler_index == null ? res.info.sampler_name : res.info.sampler_index}`,
+              `分辨率：${res.info.enable_hr ? `${res.info.width * res.info.hr_scale} x ${res.info.height * res.info.hr_scale}` : `${res.info.width} x ${res.info.height}`}`,
+              `提示词引导系数：${res.info.cfg_scale}`,
+              res.info.enable_hr ? `高清修复算法：${res.info.hr_upscaler}` : "",
+              res.info.enable_hr ? `高清修复步数：${res.info.hr_second_pass_steps}` : "",
+              `正面：${res.info.prompt}`,
+              `反面：${res.info.negative_prompt}`,
+            ].join("\n"),
             nickname: Bot.nickname,
             user_id: Bot.uin,
           });
-          blocked++;
-          remaining_tasks--;
-          continue;
-        }
-
-        // 存入合并消息等待发送
-        data_msg.push({
-          message: [{...segment.image(`base64://${res.base64}`), origin: true}, paramdata.param.seed == -1 ? `\n随机种子：${res.seed}` : ''],
-          nickname: Bot.nickname,
-          user_id: Bot.uin,
+        })
+        .catch(async (res) => {
+          await e.reply(res.description, true);
         });
-
-        remaining_tasks--;
-      }
-      // 在合并消息中加入图片信息 
-      data_msg.push({
-        message: [
-          `迭代步数：${res.info.steps}`,
-          res.info.denoising_strength ? `重绘幅度：${res.info.denoising_strength}` : "",
-          `采样方法：${res.info.sampler_index == null ? res.info.sampler_name : res.info.sampler_index}`,
-          `分辨率：${res.info.enable_hr ? `${res.info.width * res.info.hr_scale} x ${res.info.height * res.info.hr_scale}` : `${res.info.width} x ${res.info.height}`}`,
-          `提示词引导系数：${res.info.cfg_scale}`,
-          res.info.enable_hr ? `高清修复算法：${res.info.hr_upscaler}` : "",
-          res.info.enable_hr ? `高清修复步数：${res.info.hr_second_pass_steps}` : "",
-          `正面：${res.info.prompt}`,
-          `反面：${res.info.negative_prompt}`,
-        ].join("\n"),
-        nickname: Bot.nickname,
-        user_id: Bot.uin,
-      });
-
+    
       //  尝试发送合并消息 
       let sendRes = null;
       if (e.isGroup)
