@@ -387,8 +387,8 @@ class Parse {
     txtparam.param.seed = txtparam.param.seed || -1;
     txtparam.param.scale = txtparam.param.scale || userparam.scale;
     txtparam.param.steps = txtparam.param.steps || userparam.steps;
-    txtparam.param.width = userparam.width;
-    txtparam.param.height = userparam.height;
+    txtparam.param.width = txtparam.param.width || userparam.width;
+    txtparam.param.height = txtparam.param.height || userparam.height;
     txtparam.param.enable_hr = userparam.enable_hr;
     txtparam.param.hr_upscaler = userparam.hr_upscaler;
     txtparam.param.hr_second_pass_steps = userparam.hr_second_pass_steps;
