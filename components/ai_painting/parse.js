@@ -240,8 +240,7 @@ class Parse {
     };
     
     specifyAPIList = duplicateNumbers(specifyAPIList, num);
-    num = specifyAPIList.length;
-
+    num = specifyAPIList.length ? specifyAPIList.length : num;
 
     seed = Number(seed);
     if (seed > 2147483647) seed %= 2000000000;
