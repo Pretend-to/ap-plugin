@@ -387,6 +387,7 @@ export class Ai_Painting extends plugin {
           }
           const data = { ...paramdata }
           data.specifyAPI = paramdata.specifyAPIList[i];
+          console.log(data)
           draw_tasks.push(Draw.get_a_pic(data));
         }
       }
