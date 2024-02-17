@@ -376,7 +376,7 @@ export class Ai_Painting extends plugin {
           draw_tasks.push(Draw.get_a_pic(paramdata));
         }
       } else {
-        if (paramdata.num >= 10) {
+        if (paramdata.num > 10) {
           data_msg.push({
             message: "一次最多10张图哦~",
             nickname: Bot.nickname,
