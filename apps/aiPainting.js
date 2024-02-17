@@ -295,7 +295,7 @@ export class Ai_Painting extends plugin {
         }
       }
     }else { //多张
-      remaining_tasks = paramdata.num > 10 ? 10 : paramdata.num;
+      remaining_tasks = paramdata.num > 20 ? 20 : paramdata.num;
       CD.batchCD(e, remaining_tasks, current_group_policy)
 
       let blocked = 0;  //  标记合并消息中屏蔽了几张图
@@ -376,9 +376,9 @@ export class Ai_Painting extends plugin {
 
       if (!paramdata.moreAPI) {
         for (let i = 0; i < paramdata.num; i++) {
-          if (i >= 10) {
+          if (i >= 20) {
             data_msg.push({
-              message: "一次最多10张图哦~",
+              message: "一次最多20张图哦~",
               nickname: Bot.nickname,
               user_id: Bot.uin,
             });
@@ -389,9 +389,9 @@ export class Ai_Painting extends plugin {
         }
       } else {
         for (let i = 0; i < paramdata.num; i++) {
-          if (i >= 10) {
+          if (i >= 20) {
             data_msg.push({
-              message: "一次最多10张图哦~",
+              message: "一次最多20张图哦~",
               nickname: Bot.nickname,
               user_id: Bot.uin,
             });
@@ -497,7 +497,7 @@ export class Ai_Painting extends plugin {
         CD.clearCD(e);
       } else {
         // 发送成功
-        let n = paramdata.num > 10 ? 10 : paramdata.num
+        let n = paramdata.num > 20 ? 20 : paramdata.num
         let successCount = n - failedCount
         this.addUsage(e.user_id, successCount);//记录使用次数 
         e.reply(

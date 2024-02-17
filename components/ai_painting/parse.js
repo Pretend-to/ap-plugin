@@ -203,6 +203,7 @@ class Parse {
       seed: /(种子|&?seed=)(\d{1,10})/i,
       strength: /(重绘幅度|&?strength=)(0.(\d{1,5}))/i,
       specifyAPI: /接口(\d{1,2}(?:[，,]\d{1,2})*)/,
+      specifyRangeAPI: /接口(\d{1,2})-(\d{1,2})/
     };
     const shape = reg.Landscape.test(msg)
       ? "Landscape"
@@ -217,16 +218,35 @@ class Parse {
       : num <= 1
       ? `${Math.floor(Math.random() * 2147483647)}`
       : NaN;
-    const specifyAPIList = reg.specifyAPI.test(msg)
+    let specifyAPIList = reg.specifyAPI.test(msg)
       ? reg.specifyAPI.exec(msg)[1].split(/[，,]/).map(num => parseInt(num))
+      : reg.specifyRangeAPI.test(msg)
+      ? [...Array(parseInt(reg.specifyRangeAPI.exec(msg)[2]) - parseInt(reg.specifyRangeAPI.exec(msg)[1]) + 1).keys()].map(num => parseInt(reg.specifyRangeAPI.exec(msg)[1]) + num)
       : [];
     const specifyAPI = specifyAPIList.length == 1
       ? specifyAPIList[0]
       : NaN;
-    // 总num是API数量*张数
+
+    const duplicateNumbers = (arr, times) => {
+        let result = [];
+        arr.forEach(num => {
+            for (let i = 0; i < times; i++) {
+                result.push(num);
+            }
+        });
+        return result;
+    };
+    
+    specifyAPIList = duplicateNumbers(specifyAPIList, num);
+
+
+    //总num是API数量*张数
     if (specifyAPIList.length > 1){
       num = specifyAPIList.length * num;
     }
+
+
+
 
     seed = Number(seed);
     if (seed > 2147483647) seed %= 2000000000;
