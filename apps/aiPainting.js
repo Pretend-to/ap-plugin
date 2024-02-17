@@ -160,8 +160,8 @@ export class Ai_Painting extends plugin {
     } catch (err) {
       Log.w(err)
     }
-    
-    
+
+
     // 检测屏蔽词
     let prohibitedWords = []
     if (!e.isMaster && current_group_policy.apMaster.indexOf(e.user_id) == -1) {
@@ -202,7 +202,7 @@ export class Ai_Painting extends plugin {
         if (current_group_policy.isTellMaster) {
           let msg = [
             "【aiPainting】不合规图片：\n",
-            {...segment.image(`base64://${res.base64}`), origin: true},
+            { ...segment.image(`base64://${res.base64}`), origin: true },
             `\n来自${e.isGroup ? `群【${(await Bot.getGroupInfo(e.group_id)).group_name}】(${e.group_id})的` : ""}用户【${await getuserName(e)}】(${e.user_id})`,
             `\n正面：${res.info.prompt}`,
             `\n反面：${res.info.negative_prompt}`,
@@ -213,13 +213,13 @@ export class Ai_Painting extends plugin {
           await e.reply(["图片不合规，不予展示", `\nMD5：${res.md5}`], true)
         } else if (setting.nsfw_show == 2) {// 展示图链二维码
           let qrcode = await Pictools.text_to_qrcode(`https://c2cpicdw.qpic.cn/offpic_new/0//0000000000-0000000000-${res.md5}/0?term=2`)
-          await e.reply(["图片不合规，不予展示\n",segment.image(`base64://${qrcode.replace('data:image/png;base64,', '')}`)], true)
+          await e.reply(["图片不合规，不予展示\n", segment.image(`base64://${qrcode.replace('data:image/png;base64,', '')}`)], true)
         } else if (setting.nsfw_show == 3) {// 展示图床链接
           let img = Buffer.from(res.base64, 'base64')
           let url = await Pictools.upload(img)
           await e.reply(["图片不合规，不予展示\n", url], true)
         } else if (setting.nsfw_show == 4) {// 展示卡片
-            await e.reply(segment.share(`https://qm.qq.com/q/Ms6l12IiU6`, '图片违规无法显示！不如戳链接来咱的群画,无内鬼！😋', 'https://api.krumio.com/qava?qq=1099834705', '啾咪啊，这里有人涩涩啊！！！'))
+          await e.reply(segment.share(`https://qm.qq.com/q/Ms6l12IiU6`, '图片违规无法显示！不如戳链接来咱的群画,无内鬼！😋', 'https://api.krumio.com/qava?qq=1099834705', '啾咪啊，这里有人涩涩啊！！！'))
         }
         this.addUsage(e.user_id, 1);
         return true
@@ -227,10 +227,10 @@ export class Ai_Painting extends plugin {
 
       let concise_mode = setting.concise_mode
       const elapsed = (end - start) / 1000;
-      
+
       // 如果简洁模式开启，则只发送图片
       if (concise_mode) {
-        e.reply([segment.at(e.user_id), {...segment.image(`base64://${res.base64}`), origin: true}, `生成总耗时${elapsed.toFixed(2)}秒`] , false, { recallMsg: current_group_policy.isRecall ? current_group_policy.recallDelay : 0 })
+        e.reply([segment.at(e.user_id), { ...segment.image(`base64://${res.base64}`), origin: true }, `生成总耗时${elapsed.toFixed(2)}秒`], false, { recallMsg: current_group_policy.isRecall ? current_group_policy.recallDelay : 0 })
         this.addUsage(e.user_id, 1)
         return true
       } else {
@@ -251,7 +251,7 @@ export class Ai_Painting extends plugin {
         ].filter(Boolean).join('\n');
         let msg = [
           usageLimit ? `今日剩余${remainingTimes - 1}次\n` : "",
-          {...segment.image(`base64://${res.base64}`), origin: true},
+          { ...segment.image(`base64://${res.base64}`), origin: true },
         ]
         // Log.i(info.length)                                           /*  */
         let max_fold = setting.max_fold
@@ -292,8 +292,8 @@ export class Ai_Painting extends plugin {
         }
       }
     }
-    // 多张
-    else {
+    // 多张,但是1个API
+    else if (!paramdata.moreAPI) {
       remaining_tasks = paramdata.num > 10 ? 10 : paramdata.num;
       CD.batchCD(e, remaining_tasks, current_group_policy)
 
@@ -362,18 +362,36 @@ export class Ai_Painting extends plugin {
       // 尝试适用于大负载绘图接口的同步请求
       let draw_tasks = [];
 
-      for (let i = 0; i < paramdata.num; i++) {
-        if (i >= 10) {
+      if (!paramdata.moreAPI) {
+        for (let i = 0; i < paramdata.num; i++) {
+          if (i >= 10) {
+            data_msg.push({
+              message: "一次最多10张图哦~",
+              nickname: Bot.nickname,
+              user_id: Bot.uin,
+            });
+            break;
+          }
+
+          draw_tasks.push(Draw.get_a_pic(paramdata));
+        }
+      } else {
+        if (paramdata.num >= 10) {
           data_msg.push({
             message: "一次最多10张图哦~",
             nickname: Bot.nickname,
             user_id: Bot.uin,
-          });
-          break;
+          })
         }
-        
-        draw_tasks.push(Draw.get_a_pic(paramdata));
+        else {
+          for (index of specifyAPIList) {
+            const data = { ...paramdata }
+            data.specifyAPI = index;
+            draw_tasks.push(Draw.get_a_pic(data));
+          }
+        }
       }
+
 
 
       var data_msg = [];
@@ -419,7 +437,7 @@ export class Ai_Painting extends plugin {
               user_id: Bot.uin,
             });
           }))
-          return(resList[0]);
+          return (resList[0]);
         })
         .then((res) => {
           // 在合并消息中加入图片信息 
@@ -442,7 +460,7 @@ export class Ai_Painting extends plugin {
         .catch(async (res) => {
           await e.reply(res.description, true);
         });
-    
+
       //  尝试发送合并消息 
       let sendRes = null;
       if (e.isGroup)
