@@ -99,14 +99,15 @@ class Parse {
     // 如果指定了不存在的接口
     const config = await Config.getcfg();
 
-    for (index in txtparam.specifyAPIList){
-      if (index > config.APIList.length) {
-        return {
-          code: 2,
-          msg: `接口${txtparam.specifyAPI}不存在,当前有${config.APIList.length}个接口。`,
-        };
+    for (var index in txtparam.specifyAPIList) {
+      if (index >= config.APIList.length) {
+          return {
+              code: 2,
+              msg: `接口 ${txtparam.specifyAPI} 不存在，当前有 ${config.APIList.length} 个接口。`,
+          };
       }
-    }
+  }
+  
     
     // 有图片时，采用图片的宽高
     if (picInfo) {

@@ -376,24 +376,21 @@ export class Ai_Painting extends plugin {
           draw_tasks.push(Draw.get_a_pic(paramdata));
         }
       } else {
-        if (paramdata.num > 10) {
-          data_msg.push({
-            message: "一次最多10张图哦~",
-            nickname: Bot.nickname,
-            user_id: Bot.uin,
-          })
-        }
-        else {
-          for (index of specifyAPIList) {
-            const data = { ...paramdata }
-            data.specifyAPI = index;
-            draw_tasks.push(Draw.get_a_pic(data));
+        for (let i = 0; i < paramdata.num; i++) {
+          if (i >= 10) {
+            data_msg.push({
+              message: "一次最多10张图哦~",
+              nickname: Bot.nickname,
+              user_id: Bot.uin,
+            });
+            break;
           }
+          const data = { ...paramdata }
+          data.specifyAPI = index;
+          draw_tasks.push(Draw.get_a_pic(data));
         }
       }
-
-
-
+      
       var data_msg = [];
 
       const draw_results = await Promise.all(draw_tasks)
