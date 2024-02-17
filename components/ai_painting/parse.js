@@ -254,8 +254,9 @@ class Parse {
       .replace(reg.seed, "")
       .replace(reg.strength, "")
       .replace(reg.steps, "")
-      .replace(reg.specifyAPI, "")
-      .replace(reg.specifyRangeAPI, "");
+      .replace(reg.specifyRangeAPI, "")
+      .replace(reg.specifyAPI, "");
+
 
     try {
       let isMatchingLora = false;
