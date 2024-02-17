@@ -55,6 +55,9 @@ export class Ai_Painting extends plugin {
     // 获取设置
     let setting = await Config.getSetting();
 
+    // 获取配置
+    let apcfg = await Config.getcfg()
+
     // 获取本群策略
     let current_group_policy = await Parse.parsecfg(e)
 
@@ -291,9 +294,7 @@ export class Ai_Painting extends plugin {
           }
         }
       }
-    }
-    // 多张,但是1个API
-    else {
+    }else { //多张
       remaining_tasks = paramdata.num > 10 ? 10 : paramdata.num;
       CD.batchCD(e, remaining_tasks, current_group_policy)
 
@@ -361,6 +362,17 @@ export class Ai_Painting extends plugin {
 
       // 尝试适用于大负载绘图接口的同步请求
       let draw_tasks = [];
+      const apiname_lists = {
+        index:-1,
+        list:[],
+        getname(){
+          this.index++;
+          return this.list[this.index]
+        },
+        pushapi(name){
+          this.list.push(name)
+        }
+      };
 
       if (!paramdata.moreAPI) {
         for (let i = 0; i < paramdata.num; i++) {
@@ -385,9 +397,13 @@ export class Ai_Painting extends plugin {
             });
             break;
           }
-          const data = { ...paramdata }
-          data.specifyAPI = paramdata.specifyAPIList[i];
-          console.log(data)
+
+          const theapi = paramdata.specifyAPIList[i];
+          const apiobj = apcfg.APIList[theapi - 1];
+          const data = { ...paramdata };
+
+          apiname_lists.pushapi(apiobj.remark);
+          data.specifyAPI = theapi;
           draw_tasks.push(Draw.get_a_pic(data));
         }
       }
@@ -430,7 +446,8 @@ export class Ai_Painting extends plugin {
             }
             // 存入合并消息等待发送
             data_msg.push({
-              message: [{ ...segment.image(`base64://${res.base64}`), origin: true }, paramdata.param.seed == -1 ? `\n随机种子：${res.seed}` : ''],
+              //TODO : 在消息里展示接口
+              message: [{ ...segment.image(`base64://${res.base64}`), origin: true }, paramdata.param.seed == -1 ? `\n随机种子：${res.seed}` : '', paramdata.moreAPI ? `\n使用接口：${apiname_lists.getname()}` : ''],
               nickname: Bot.nickname,
               user_id: Bot.uin,
             });

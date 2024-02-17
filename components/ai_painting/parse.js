@@ -145,7 +145,6 @@ class Parse {
       message: "",
       moreAPI:  txtparam.specifyAPIList.length > 1 ? true : false,
     };
-    console.log(paramdata);
 
     return paramdata;
   }
@@ -379,8 +378,8 @@ class Parse {
         seed,
         scale: Number(scale),
         steps: Number(steps),
-        width: shape == "Landscape" ? 768 : shape == "Square" ? 640 : NaN,
-        height: shape == "Landscape" ? 512 : shape == "Square" ? 640 : NaN,
+        width: shape == "Landscape" ? 1024 : shape == "Square" ? 720 : NaN,
+        height: shape == "Landscape" ? 720 : shape == "Square" ? 720 : NaN,
         tags: tags.trim(),
         ntags: ntags.trim(),
         pt,
