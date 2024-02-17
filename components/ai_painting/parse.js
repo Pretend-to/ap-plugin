@@ -240,12 +240,7 @@ class Parse {
     };
     
     specifyAPIList = duplicateNumbers(specifyAPIList, num);
-
-
-    //总num是API数量*张数
-    if (specifyAPIList.length > 1){
-      num = specifyAPIList.length * num;
-    }
+    num = specifyAPIList.length;
 
 
     seed = Number(seed);
