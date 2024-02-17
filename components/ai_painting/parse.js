@@ -218,11 +218,13 @@ class Parse {
       : num <= 1
       ? `${Math.floor(Math.random() * 2147483647)}`
       : NaN;
-    let specifyAPIList = reg.specifyAPI.test(msg)
-      ? reg.specifyAPI.exec(msg)[1].split(/[，,]/).map(num => parseInt(num))
-      : reg.specifyRangeAPI.test(msg)
+    let specifyAPIList = reg.specifyRangeAPI.test(msg)
       ? [...Array(parseInt(reg.specifyRangeAPI.exec(msg)[2]) - parseInt(reg.specifyRangeAPI.exec(msg)[1]) + 1).keys()].map(num => parseInt(reg.specifyRangeAPI.exec(msg)[1]) + num)
+      : reg.specifyAPI.test(msg)
+      ? reg.specifyAPI.exec(msg)[1].split(/[，,]/).map(num => parseInt(num))
       : [];
+
+
     const specifyAPI = specifyAPIList.length == 1
       ? specifyAPIList[0]
       : NaN;
@@ -244,8 +246,6 @@ class Parse {
     if (specifyAPIList.length > 1){
       num = specifyAPIList.length * num;
     }
-
-
 
 
     seed = Number(seed);
