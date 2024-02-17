@@ -386,11 +386,11 @@ export class Ai_Painting extends plugin {
             break;
           }
           const data = { ...paramdata }
-          data.specifyAPI = index;
+          data.specifyAPI = paramdata.specifyAPIList[i];
           draw_tasks.push(Draw.get_a_pic(data));
         }
       }
-      
+
       var data_msg = [];
 
       const draw_results = await Promise.all(draw_tasks)
