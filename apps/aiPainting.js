@@ -31,7 +31,7 @@ export class Ai_Painting extends plugin {
       priority: 1009,
       rule: [
         {
-          reg: "^#?(绘图|咏唱)([\\s\\S]*)$",
+          reg: "^#?(绘图|咏唱|绘个图|画图)([\\s\\S]*)$",
           fnc: "aiPainting",
         },
         {
@@ -168,7 +168,7 @@ export class Ai_Painting extends plugin {
       [prohibitedWords, paramdata] = await Parse.checkWords(paramdata)
       if (prohibitedWords.length && current_group_policy.isBan) {
         Policy.banUser(e.user_id)// 封禁用户
-        return await e.reply(`tags中包含屏蔽词：${prohibitedWords.join('、')}\n您的账号已被禁止使用绘图功能。如属误封，请截图您的此条消息，然后联系机器人主人解封~`, true)
+        return await e.reply(`tags中包含屏蔽词：${prohibitedWords.join('、')}\n您的账号已被禁止在本群使用绘图功能。不过涩图也可以到 798543340 来画，无内鬼!😋`, true)
       }
     }
 
@@ -219,7 +219,7 @@ export class Ai_Painting extends plugin {
           let url = await Pictools.upload(img)
           await e.reply(["图片不合规，不予展示\n", url], true)
         } else if (setting.nsfw_show == 4) {// 展示卡片
-            await e.reply(segment.share(`https://c2cpicdw.qpic.cn/offpic_new/0//0000000000-0000000000-${res.md5}/0?term=2`, '图片不合规，不予展示', 'https://i.postimg.cc/wBSf50bC/1.png', '啾咪啊，这里有人涩涩啊！！！'))
+            await e.reply(segment.share(`https://qm.qq.com/q/Ms6l12IiU6`, '图片违规无法显示！不如戳链接来咱的群画,无内鬼！😋', 'https://api.krumio.com/qava?qq=1099834705', '啾咪啊，这里有人涩涩啊！！！'))
         }
         this.addUsage(e.user_id, 1);
         return true

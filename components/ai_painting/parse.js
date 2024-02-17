@@ -98,12 +98,16 @@ class Parse {
     txtparam = this.complete_txtparam(userparam, txtparam);
     // 如果指定了不存在的接口
     const config = await Config.getcfg();
+
+    const maxIndex = Math.max();
     if (txtparam.specifyAPI > config.APIList.length) {
       return {
         code: 2,
         msg: `接口${txtparam.specifyAPI}不存在,当前有${config.APIList.length}个接口。`,
       };
     }
+
+
     // 有图片时，采用图片的宽高
     if (picInfo) {
       // 计算640*640像素下所对应的宽高
@@ -133,11 +137,14 @@ class Parse {
       num: txtparam.num,
       rawtag: txtparam.rawtag,
       specifyAPI: txtparam.specifyAPI,
+      specifyAPIList: txtparam.specifyAPIList,
       user: Number(e.user_id),
       code: 0,
       JH: gpolicy.JH,
       message: "",
+      moreAPI:  txtparam.specifyAPIList.length > 1 ? true : false,
     };
+    console.log(paramdata);
 
     return paramdata;
   }
@@ -195,7 +202,7 @@ class Parse {
       scale: /(提示词相关性|&?scale=)((\d{1,2})(.(\d{1,5}))?)/i,
       seed: /(种子|&?seed=)(\d{1,10})/i,
       strength: /(重绘幅度|&?strength=)(0.(\d{1,5}))/i,
-      specifyAPI: /接口(\d{1,2})/,
+      specifyAPI: /接口(\d{1,2}(?:[，,]\d{1,2})*)/,
     };
     const shape = reg.Landscape.test(msg)
       ? "Landscape"
@@ -210,15 +217,23 @@ class Parse {
       : num <= 1
       ? `${Math.floor(Math.random() * 2147483647)}`
       : NaN;
-    const specifyAPI = reg.specifyAPI.test(msg)
-      ? reg.specifyAPI.exec(msg)[1]
+    const specifyAPIList = reg.specifyAPI.test(msg)
+      ? reg.specifyAPI.exec(msg)[1].split(/[，,]/).map(num => parseInt(num))
+      : [];
+    const specifyAPI = specifyAPIList.length == 1
+      ? specifyAPIList[0]
       : NaN;
+    // 总num是API数量*张数
+    if (specifyAPIList.length > 1){
+      num = specifyAPIList.length * num;
+    }
+
     seed = Number(seed);
     if (seed > 2147483647) seed %= 2000000000;
 
     // 移除命令中的自定义参数
     msg = msg
-      .replace(/^(＃|#)?(绘图|绘画|咏唱|绘世)/, "")
+      .replace(/^(＃|#)?(绘图|咏唱|绘个图|画图)/, "")      
       .replace(/(\d{1,5})张/g, "")
       .replace(/(竖图|横图|方图|(&shape=)?Landscape|(&shape=)?Square)/gi, "")
       .replace(reg.scale, "")
@@ -371,7 +386,8 @@ class Parse {
         npt,
       },
       num: Number(num),
-      specifyAPI: Number(specifyAPI),
+      specifyAPIList: specifyAPIList.length > 1 ? specifyAPIList : NaN, 
+      specifyAPI: specifyAPI,
       rawtag: {
         tags: tags.trim(),
         ntags: ntags.trim(),
