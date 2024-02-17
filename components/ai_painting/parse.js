@@ -260,7 +260,8 @@ class Parse {
       .replace(reg.seed, "")
       .replace(reg.strength, "")
       .replace(reg.steps, "")
-      .replace(reg.specifyAPI, "");
+      .replace(reg.specifyAPI, "")
+      .replace(reg.specifyRangeAPI, "");
 
     try {
       let isMatchingLora = false;
