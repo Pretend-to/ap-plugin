@@ -402,7 +402,7 @@ export class Ai_Painting extends plugin {
           const apiobj = apcfg.APIList[theapi - 1];
           const data = { ...paramdata };
 
-          apiname_lists.pushapi(apiobj.remark);
+          apiname_lists.pushapi(`${theapi}:${apiobj.remark}`);
           data.specifyAPI = theapi;
           draw_tasks.push(Draw.get_a_pic(data));
         }
