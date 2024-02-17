@@ -410,7 +410,7 @@ export class Ai_Painting extends plugin {
 
       var data_msg = [];
 
-      const draw_results = await Promise.all(draw_tasks)
+      await Promise.all(draw_tasks)
         .then(async (resList) => {
           await Promise.all(resList.map(async (res) => {
             // 图片损坏或审核超时或响应超时
