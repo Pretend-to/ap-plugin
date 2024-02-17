@@ -446,7 +446,6 @@ export class Ai_Painting extends plugin {
             }
             // 存入合并消息等待发送
             data_msg.push({
-              //TODO : 在消息里展示接口
               message: [{ ...segment.image(`base64://${res.base64}`), origin: true }, paramdata.param.seed == -1 ? `\n随机种子：${res.seed}` : '', paramdata.moreAPI ? `\n使用接口：${apiname_lists.getname()}` : ''],
               nickname: Bot.nickname,
               user_id: Bot.uin,
