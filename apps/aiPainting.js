@@ -293,7 +293,7 @@ export class Ai_Painting extends plugin {
       }
     }
     // 多张,但是1个API
-    else if (!paramdata.moreAPI) {
+    else {
       remaining_tasks = paramdata.num > 10 ? 10 : paramdata.num;
       CD.batchCD(e, remaining_tasks, current_group_policy)
 
