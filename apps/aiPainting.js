@@ -18,6 +18,7 @@ import { Parse, CD, Policy, Draw } from '../components/apidx.js';
 import Config from '../components/ai_painting/config.js';
 import _ from 'lodash';
 import Pictools from '../utils/pic_tools.js';
+import fs from 'fs';
 
 // 批量绘图的剩余张数
 let remaining_tasks = 0;
@@ -252,9 +253,24 @@ export class Ai_Painting extends plugin {
           `反面：${res.info.negative_prompt}`,
           `耗时：${elapsed.toFixed(2)}秒`,
         ].filter(Boolean).join('\n');
+
+
+        mkdirs('data/ap/result')
+        let resultFileLoc = `data/ap/result/${Date.now()}.png`
+        
+        // 假设base64Image是你的base64编码的PNG数据
+        const base64Image = res.base64 // 这里应该是你的base64数据
+      
+        // 将base64数据解码为buffer
+        const resultBuffer = Buffer.from(base64Image, 'base64')
+        
+        // 将buffer写入文件
+        fs.writeFileSync(resultFileLoc, resultBuffer)
+
+
         let msg = [
           usageLimit ? `今日剩余${remainingTimes - 1}次\n` : "",
-          { ...segment.image(`base64://${res.base64}`), origin: true },
+          { ...segment.image(fs.createReadStream(resultFileLoc)), origin: true },
         ]
         // Log.i(info.length)                                           /*  */
         let max_fold = setting.max_fold
@@ -293,6 +309,7 @@ export class Ai_Painting extends plugin {
             }
           }
         }
+        fs.unlinkSync(resultFileLoc)
       }
     }else { //多张
       remaining_tasks = paramdata.num > 20 ? 20 : paramdata.num;
@@ -552,5 +569,16 @@ export class Ai_Painting extends plugin {
       });
     }
     return true;
+  }
+}
+
+function mkdirs(dirname) {
+  if (fs.existsSync(dirname)) {
+    return true
+  } else {
+    if (mkdirs(path.dirname(dirname))) {
+      fs.mkdirSync(dirname)
+      return true
+    }
   }
 }
