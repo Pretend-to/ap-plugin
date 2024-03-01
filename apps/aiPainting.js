@@ -19,6 +19,7 @@ import Config from '../components/ai_painting/config.js';
 import _ from 'lodash';
 import Pictools from '../utils/pic_tools.js';
 import fs from 'fs';
+import path from 'path';
 
 // 批量绘图的剩余张数
 let remaining_tasks = 0;
