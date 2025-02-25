@@ -363,13 +363,12 @@ class Parse {
         seed,
         scale: Number(scale),
         steps: Number(steps),
-        width: shape == "Landscape" ? 768 : shape == "Square" ? 640 : NaN,
-        height: shape == "Landscape" ? 512 : shape == "Square" ? 640 : NaN,
         tags: tags.trim(),
         ntags: ntags.trim(),
         pt,
         npt,
       },
+      shape: shape,
       num: Number(num),
       specifyAPI: Number(specifyAPI),
       rawtag: {
@@ -387,8 +386,8 @@ class Parse {
     txtparam.param.seed = txtparam.param.seed || -1;
     txtparam.param.scale = txtparam.param.scale || userparam.scale;
     txtparam.param.steps = txtparam.param.steps || userparam.steps;
-    txtparam.param.width = userparam.width;
-    txtparam.param.height = userparam.height;
+    txtparam.param.width = txtparam.shape == "" ? Math.min(userparam.width, userparam.height) : Math.max(userparam.width, userparam.height);
+    txtparam.param.height = txtparam.shape == "Landscape" ? Math.min(userparam.width, userparam.height) : Math.max(userparam.width, userparam.height);
     txtparam.param.enable_hr = userparam.enable_hr;
     txtparam.param.hr_upscaler = userparam.hr_upscaler;
     txtparam.param.hr_second_pass_steps = userparam.hr_second_pass_steps;
