@@ -381,17 +381,39 @@ class Parse {
 
   /** 对于没有出现的属性，使用默认值填充 */
   complete_txtparam(userparam, txtparam) {
-    txtparam.param.sampler = txtparam.param.sampler || userparam.sampler;
-    txtparam.param.strength = txtparam.param.strength || userparam.strength;
-    txtparam.param.seed = txtparam.param.seed || -1;
-    txtparam.param.scale = txtparam.param.scale || userparam.scale;
-    txtparam.param.steps = txtparam.param.steps || userparam.steps;
-    txtparam.param.width = txtparam.shape == "" ? Math.min(userparam.width, userparam.height) : Math.max(userparam.width, userparam.height);
-    txtparam.param.height = txtparam.shape == "Landscape" ? Math.min(userparam.width, userparam.height) : Math.max(userparam.width, userparam.height);
-    txtparam.param.enable_hr = userparam.enable_hr;
-    txtparam.param.hr_upscaler = userparam.hr_upscaler;
-    txtparam.param.hr_second_pass_steps = userparam.hr_second_pass_steps;
-    txtparam.param.hr_scale = userparam.hr_scale;
+    const { param } = txtparam;
+    const { sampler, strength, scale, steps, width: userWidth, height: userHeight, ...hrParams } = userparam;
+    
+    // 设置带默认值的参数
+    ['sampler', 'strength', 'scale', 'steps'].forEach(prop => {
+      param[prop] = param[prop] || userparam[prop];
+    });
+    param.seed = param.seed || -1;
+  
+    // 计算尺寸逻辑
+    const [minWH, maxWH] = [Math.min(userWidth, userHeight), Math.max(userWidth, userHeight)];
+    switch (txtparam.shape) {
+      case 'Landscape':
+        param.width = maxWH;
+        param.height = minWH;
+        break;
+      case 'Square':
+        param.width = maxWH;
+        param.height = maxWH;
+        break;
+      default: // 竖向或未指定
+        param.width = minWH;
+        param.height = maxWH;
+    }
+  
+    // 设置高清修复参数
+    Object.assign(param, {
+      enable_hr: hrParams.enable_hr,
+      hr_upscaler: hrParams.hr_upscaler,
+      hr_second_pass_steps: hrParams.hr_second_pass_steps,
+      hr_scale: hrParams.hr_scale
+    });
+  
     return txtparam;
   }
 
